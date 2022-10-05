@@ -1,6 +1,7 @@
 # SpringSimulation
 Simulation of spring only
+
 TODO:
-Adding motion tracking
-Support haptic device
-support VR headsets
+1. Adding motion tracking
+2. Support haptic device
+3. support VR headsets
