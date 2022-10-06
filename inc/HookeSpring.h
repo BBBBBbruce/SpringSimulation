@@ -17,8 +17,10 @@ public:
 	Spring(float sc, float length, float maxforce);
 	~Spring();
 	float get_springConstant();
-	float get_length();
+	float get_OriginalLength();
+	float get_CurrentLength();
 	float get_maxforce();
+	float get_currentforce();
 	void set_externalforce(float f);
 	
 

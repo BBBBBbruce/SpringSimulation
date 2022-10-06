@@ -3,11 +3,57 @@
 #include <iostream>
 #include "HookeSpring.h"
 #include "GraphicsRenderer.h"
+#include <windows.h>
+#include <Xinput.h>
+
+#pragma comment(lib,"XInput.lib")
+#pragma comment(lib,"Xinput9_1_0.lib")
+
+#define INPUT_DEADZONE 2
+
+using namespace std;
 
 int main()
 {
 
-	renderLoop();
+	//renderLoop();
+
+	//controller setup
+    // one controller supports now
+    XINPUT_STATE state;
+    DWORD dwResult = XInputGetState(0, &state);
+    float lt;
+    float force;
+
+    //use cm and newton as units
+    // spring constant 4 N/cm
+    // original length 2.5 cm
+    // maxforce before break 6 N
+    Spring spring1 = Spring(4, 2.5, 6);
+
+    //Assume max press force is 5N when LT/RT reaches 255
+
+
+    while (true)
+    {   
+
+        dwResult = XInputGetState(0, &state);
+        lt = state.Gamepad.bLeftTrigger;
+
+        cout << endl << "============" << endl ;
+        
+        cout << "Raw left trigger input: " << lt << endl;
+        force = lt / 255 * 5;
+        spring1.set_externalforce(force);
+
+        cout << "spring now has length: " << spring1.get_CurrentLength() << " and under pressed by external force of " << spring1.get_currentforce() << endl;;
+            cout << endl << "============" << endl;
+        if (GetAsyncKeyState(VK_ESCAPE)) break;
+        Sleep(100);
+       
+    }
+    
+
 
 }
 

@@ -65,7 +65,7 @@ void renderLoop()
 {
 	sCamera = new Snippets::Camera(PxVec3(50.0f, 50.0f, 50.0f), PxVec3(-0.6f, -0.2f, -0.7f));
 
-	Snippets::setupDefaultWindow("PhysX Snippet HelloWorld");
+	Snippets::setupDefaultWindow("Spring test");
 	Snippets::setupDefaultRenderState();
 
 	glutIdleFunc(idleCallback);

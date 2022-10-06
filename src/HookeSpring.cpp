@@ -34,14 +34,24 @@ float Spring::get_springConstant()
     return SpringConstant;
 }
 
-float Spring::get_length()
+float Spring::get_OriginalLength()
 {
     return OriginalLength;
+}
+
+float Spring::get_CurrentLength()
+{
+    return Currentlength;
 }
 
 float Spring::get_maxforce()
 {
     return MaxForce;
+}
+
+float Spring::get_currentforce()
+{
+    return ExternalForce;
 }
 
 void Spring::set_externalforce(float f)
@@ -60,11 +70,11 @@ void Spring::set_externalforce(float f)
 void Spring::updatestate()
 {
     if (ExternalForce < MaxForce) {
-        float internalforce = SpringConstant * (OriginalLength - Currentlength);
-        Currentlength = (ExternalForce - internalforce) / SpringConstant;
+       
+        Currentlength = OriginalLength - ExternalForce / SpringConstant;
     }
     else {
-        Currentlength = MaxForce / SpringConstant;
+        Currentlength = OriginalLength - MaxForce / SpringConstant;
         plastic = true;
     }
 }
