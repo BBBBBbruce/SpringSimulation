@@ -110,16 +110,17 @@ void initPhysics(bool /*interactive*/)
 	PxRigidStatic* groundPlane = PxCreatePlane(*gPhysics, PxPlane(0, 1, 0, 0), *gMaterial);
 	gScene->addActor(*groundPlane);
 
-	for (PxU32 i = 0; i < 40; i++)
-		createStack(PxTransform(PxVec3(0, 0, stackZ -= 10.0f)), 20, 1.0f);
+	//for (PxU32 i = 0; i < 40; i++)
+		//createStack(PxTransform(PxVec3(0, 0, stackZ -= 10.0f)), 20, 1.0f);
 
-	PxRigidDynamic* ball = createDynamic(PxTransform(PxVec3(0, 20, 100)), PxSphereGeometry(5), PxVec3(0, -25, -100));
+	//PxRigidDynamic* ball = createDynamic(PxTransform(PxVec3(0, 20, 100)), PxSphereGeometry(5), PxVec3(0, -25, -100));
+	PxRigidDynamic* ball = createDynamic(PxTransform(PxVec3(0, 20, 100)), PxSphereGeometry(5), PxVec3(0, 0, 0));
 	PxRigidBodyExt::updateMassAndInertia(*ball, 1000.f);
 }
 
 void stepPhysics(bool /*interactive*/)
 {
-	gScene->simulate(1.0f / 60.0f);
+	gScene->simulate(1.0f / 120.0f);
 	gScene->fetchResults(true);
 }
 
