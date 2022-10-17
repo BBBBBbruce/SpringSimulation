@@ -200,9 +200,6 @@ std::string GetTrackedDeviceString(vr::TrackedDeviceIndex_t unDevice, vr::Tracke
 }
 
 
-//-----------------------------------------------------------------------------
-// Purpose:
-//-----------------------------------------------------------------------------
 bool VR_Application::BInit()
 {
 	if (SDL_Init(SDL_INIT_VIDEO | SDL_INIT_TIMER) < 0)
@@ -307,7 +304,7 @@ bool VR_Application::BInit()
 		return false;
 	}
 
-	vr::VRInput()->SetActionManifestPath(Path_MakeAbsolute("../hellovr_actions.json", Path_StripFilename(Path_GetExecutablePath())).c_str());
+	vr::VRInput()->SetActionManifestPath(Path_MakeAbsolute("../../assets/Config/hellovr_actions.json", Path_StripFilename(Path_GetExecutablePath())).c_str());
 
 	vr::VRInput()->GetActionHandle("/actions/demo/in/HideCubes", &m_actionHideCubes);
 	vr::VRInput()->GetActionHandle("/actions/demo/in/HideThisController", &m_actionHideThisController);
@@ -387,9 +384,6 @@ bool VR_Application::BInitCompositor()
 }
 
 
-//-----------------------------------------------------------------------------
-// Purpose:
-//-----------------------------------------------------------------------------
 void VR_Application::Shutdown()
 {
 	if (m_pHMD)
@@ -465,9 +459,7 @@ void VR_Application::Shutdown()
 	SDL_Quit();
 }
 
-//-----------------------------------------------------------------------------
-// Purpose:
-//-----------------------------------------------------------------------------
+
 bool VR_Application::HandleInput()
 {
 	SDL_Event sdlEvent;
@@ -586,9 +578,7 @@ bool VR_Application::HandleInput()
 	return bRet;
 }
 
-//-----------------------------------------------------------------------------
-// Purpose:
-//-----------------------------------------------------------------------------
+
 void VR_Application::RunMainLoop()
 {
 	bool bQuit = false;
@@ -628,9 +618,6 @@ void VR_Application::ProcessVREvent(const vr::VREvent_t& event)
 }
 
 
-//-----------------------------------------------------------------------------
-// Purpose:
-//-----------------------------------------------------------------------------
 void VR_Application::RenderFrame()
 {
 	// for now as fast as possible
@@ -882,13 +869,10 @@ bool VR_Application::CreateAllShaders()
 }
 
 
-//-----------------------------------------------------------------------------
-// Purpose:
-//-----------------------------------------------------------------------------
 bool VR_Application::SetupTexturemaps()
 {
 	std::string sExecutableDirectory = Path_StripFilename(Path_GetExecutablePath());
-	std::string strFullPath = Path_MakeAbsolute("../cube_texture.png", sExecutableDirectory);
+	std::string strFullPath = Path_MakeAbsolute("../../assets/Texture/cube_texture.png", sExecutableDirectory);
 
 	std::vector<unsigned char> imageRGBA;
 	unsigned nImageWidth, nImageHeight;
@@ -979,9 +963,6 @@ void VR_Application::SetupScene()
 }
 
 
-//-----------------------------------------------------------------------------
-// Purpose:
-//-----------------------------------------------------------------------------
 void VR_Application::AddCubeVertex(float fl0, float fl1, float fl2, float fl3, float fl4, std::vector<float>& vertdata)
 {
 	vertdata.push_back(fl0);
@@ -992,9 +973,7 @@ void VR_Application::AddCubeVertex(float fl0, float fl1, float fl2, float fl3, f
 }
 
 
-//-----------------------------------------------------------------------------
-// Purpose:
-//-----------------------------------------------------------------------------
+
 void VR_Application::AddCubeToScene(Matrix4 mat, std::vector<float>& vertdata)
 {
 	// Matrix4 mat( outermat.data() );
@@ -1147,9 +1126,6 @@ void VR_Application::RenderControllerAxes()
 }
 
 
-//-----------------------------------------------------------------------------
-// Purpose:
-//-----------------------------------------------------------------------------
 void VR_Application::SetupCameras()
 {
 	m_mat4ProjectionLeft = GetHMDMatrixProjectionEye(vr::Eye_Left);
@@ -1201,9 +1177,6 @@ bool VR_Application::CreateFrameBuffer(int nWidth, int nHeight, FramebufferDesc&
 }
 
 
-//-----------------------------------------------------------------------------
-// Purpose:
-//-----------------------------------------------------------------------------
 bool VR_Application::SetupStereoRenderTargets()
 {
 	if (!m_pHMD)
@@ -1218,9 +1191,6 @@ bool VR_Application::SetupStereoRenderTargets()
 }
 
 
-//-----------------------------------------------------------------------------
-// Purpose:
-//-----------------------------------------------------------------------------
 void VR_Application::SetupCompanionWindow()
 {
 	if (!m_pHMD)
@@ -1270,9 +1240,6 @@ void VR_Application::SetupCompanionWindow()
 }
 
 
-//-----------------------------------------------------------------------------
-// Purpose:
-//-----------------------------------------------------------------------------
 void VR_Application::RenderStereoTargets()
 {
 	glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
@@ -1367,9 +1334,6 @@ void VR_Application::RenderScene(vr::Hmd_Eye nEye)
 }
 
 
-//-----------------------------------------------------------------------------
-// Purpose:
-//-----------------------------------------------------------------------------
 void VR_Application::RenderCompanionWindow()
 {
 	glDisable(GL_DEPTH_TEST);
@@ -1458,9 +1422,6 @@ Matrix4 VR_Application::GetCurrentViewProjectionMatrix(vr::Hmd_Eye nEye)
 }
 
 
-//-----------------------------------------------------------------------------
-// Purpose:
-//-----------------------------------------------------------------------------
 void VR_Application::UpdateHMDMatrixPose()
 {
 	if (!m_pHMD)
