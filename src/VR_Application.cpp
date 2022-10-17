@@ -1,5 +1,6 @@
 #include "VR_Application.h"
 
+
 static bool g_bPrintf = true;
 
 #ifndef _WIN32
@@ -169,6 +170,7 @@ VR_Application::VR_Application(int argc, char* argv[])
 	}
 	// other initialization tasks are done in BInit
 	memset(m_rDevClassChar, 0, sizeof(m_rDevClassChar));
+	spring1 = Spring(4, 2.5, 6);
 };
 
 
@@ -524,6 +526,15 @@ bool VR_Application::HandleInput()
 	m_rHand[Left].m_bShowController = true;
 	m_rHand[Right].m_bShowController = true;
 
+
+	/*
+	+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+	Spring simulation handled by trigger
+	+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+	*/
+
+
+
 	vr::InputAnalogActionData_t analogData_trigger;
 	if (vr::VRInput()->GetAnalogActionData(m_actiontriggeranalog, &analogData_trigger, sizeof(analogData_trigger), vr::k_ulInvalidInputValueHandle) == vr::VRInputError_None && analogData_trigger.bActive)
 	{
@@ -531,9 +542,17 @@ bool VR_Application::HandleInput()
 
 	}
 
-	std::cout << "trigger analog: " << triggeranalog << std::endl;
+	std::cout << "raw trigger analog: " << triggeranalog << std::endl; // 0-1
+	float force = triggeranalog * 5;
+	spring1.set_externalforce(force);
+	std::cout << "spring now has length: " << spring1.get_CurrentLength() << " and under pressed by external force of " << spring1.get_currentforce() << std::endl;;
+	std::cout << std::endl << "============" << std::endl;
 
-
+	/*
+	+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+	End of spring sim code
+	+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+	*/
 
 
 	vr::VRInputValueHandle_t ulHideDevice;

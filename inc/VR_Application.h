@@ -1,6 +1,8 @@
 #ifndef VR_APPLICATION_H
 #define VR_APPLICATION_H
 
+#include "HookeSpring.h"
+
 
 
 #include <Vector>
@@ -192,6 +194,9 @@ private: // OpenGL bookkeeping
 	vr::VRActionHandle_t m_actiontriggeranalog = vr::k_ulInvalidActionHandle;
 
 	vr::VRActionSetHandle_t m_actionsetDemo = vr::k_ulInvalidActionSetHandle;
+
+	Spring spring1;
+
 };
 
 
