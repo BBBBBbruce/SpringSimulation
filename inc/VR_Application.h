@@ -9,8 +9,9 @@
 #include <SDL_opengl.h>
 
 
-//#include "lodepng.h"
+#include "lodepng.h"
 #include "Matrices.h"
+#include "pathtools.h"
 
 class VR_Application
 {

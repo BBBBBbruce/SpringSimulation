@@ -24,7 +24,7 @@ using namespace std;
 
 void xboxControllerTest();
 
-int main(int argv, char** args)
+int main(int argc, char* argv[])
 {
 
 	//renderLoop();
@@ -33,6 +33,30 @@ int main(int argv, char** args)
     //xboxControllerTest();
 
     //Vive controller test
+    std::cout << "#######################################" << std::endl;
+    std::cout << "#######################################" << std::endl;
+    std::cout << "#######################################" << std::endl;
+    std::cout << "program start" << std::endl;
+    std::cout << "#######################################" << std::endl;
+    std::cout << "#######################################" << std::endl;
+    std::cout << "#######################################" << std::endl;
+    std::cout << "#######################################" << std::endl;
+    std::cout << "program start" << std::endl;
+    std::cout << "#######################################" << std::endl;
+    VR_Application* pMainApplication = new VR_Application(argc, argv);
+
+    if (!pMainApplication->BInit())
+    {
+        pMainApplication->Shutdown();
+        return 1;
+    }
+
+
+
+
+    pMainApplication->RunMainLoop();
+
+    pMainApplication->Shutdown();
 
 
 
