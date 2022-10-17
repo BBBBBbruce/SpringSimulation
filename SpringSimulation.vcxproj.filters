@@ -13,6 +13,12 @@
       <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
       <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
+    <Filter Include="Header Files\shared">
+      <UniqueIdentifier>{5a92ea6f-394f-40d7-9f0d-848fdeb6ee05}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Source Files\shared">
+      <UniqueIdentifier>{55cb4e87-2919-4758-a891-337867b60a57}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="SpringSimulation.cpp">
@@ -27,8 +33,29 @@
     <ClCompile Include="src\GraphicsRenderer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="ObjReader.cpp">
+    <ClCompile Include="src\ObjReader.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\VR_CG_OpenGL.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\VR_Application.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="shared\lodepng.cpp">
+      <Filter>Source Files\shared</Filter>
+    </ClCompile>
+    <ClCompile Include="shared\Matrices.cpp">
+      <Filter>Source Files\shared</Filter>
+    </ClCompile>
+    <ClCompile Include="shared\pathtools.cpp">
+      <Filter>Source Files\shared</Filter>
+    </ClCompile>
+    <ClCompile Include="shared\strtools.cpp">
+      <Filter>Source Files\shared</Filter>
+    </ClCompile>
+    <ClCompile Include="inc\UniversalHeadrs.h">
+      <Filter>Header Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -41,8 +68,37 @@
     <ClInclude Include="inc\GraphicsRenderer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="ObjReader.h">
+    <ClInclude Include="inc\VR_CG_OpenGL.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="inc\ObjReader.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\VR_Application.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="shared\compat.h">
+      <Filter>Header Files\shared</Filter>
+    </ClInclude>
+    <ClInclude Include="shared\lodepng.h">
+      <Filter>Header Files\shared</Filter>
+    </ClInclude>
+    <ClInclude Include="shared\Matrices.h">
+      <Filter>Header Files\shared</Filter>
+    </ClInclude>
+    <ClInclude Include="shared\pathtools.h">
+      <Filter>Header Files\shared</Filter>
+    </ClInclude>
+    <ClInclude Include="shared\strtools.h">
+      <Filter>Header Files\shared</Filter>
+    </ClInclude>
+    <ClInclude Include="shared\Vectors.h">
+      <Filter>Header Files\shared</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="README.md">
+      <Filter>Resource Files</Filter>
+    </None>
   </ItemGroup>
 </Project>
