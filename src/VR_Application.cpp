@@ -138,6 +138,12 @@ VR_Application::VR_Application(int argc, char* argv[])
 	, m_iSceneVolumeInit(20)
 	, m_strPoseClasses("")
 	, m_bShowCubes(true)
+	// self define
+	, m_unSkyBoxProgramID(0)
+	, m_nSkyBoxLocation(-1)
+	, m_unSkyBoxVAO(0)
+	, m_glSkyBoxVertBuffer(0)
+	
 {
 
 	for (int i = 1; i < argc; i++)
@@ -238,7 +244,7 @@ bool VR_Application::BInit()
 	if (m_bDebugOpenGL)
 		SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, SDL_GL_CONTEXT_DEBUG_FLAG);
 
-	m_pCompanionWindow = SDL_CreateWindow("hellovr", nWindowPosX, nWindowPosY, m_nCompanionWindowWidth, m_nCompanionWindowHeight, unWindowFlags);
+	m_pCompanionWindow = SDL_CreateWindow("SpringSimulation", nWindowPosX, nWindowPosY, m_nCompanionWindowWidth, m_nCompanionWindowHeight, unWindowFlags);
 	if (m_pCompanionWindow == NULL)
 	{
 		printf("%s - Window could not be created! SDL Error: %s\n", __FUNCTION__, SDL_GetError());
@@ -274,7 +280,7 @@ bool VR_Application::BInit()
 	m_strDriver = GetTrackedDeviceString(vr::k_unTrackedDeviceIndex_Hmd, vr::Prop_TrackingSystemName_String);
 	m_strDisplay = GetTrackedDeviceString(vr::k_unTrackedDeviceIndex_Hmd, vr::Prop_SerialNumber_String);
 
-	std::string strWindowTitle = "hellovr - " + m_strDriver + " " + m_strDisplay;
+	std::string strWindowTitle = "SpringSimulation - " + m_strDriver + " " + m_strDisplay;
 	SDL_SetWindowTitle(m_pCompanionWindow, strWindowTitle.c_str());
 
 	// cube array
@@ -290,6 +296,8 @@ bool VR_Application::BInit()
 
 	m_iTexture = 0;
 	m_uiVertcount = 0;
+
+	environmentmaptexture = 0;
 
 	// 		m_MillisecondsTimer.start(1, this);
 	// 		m_SecondsTimer.start(1000, this);
@@ -360,6 +368,8 @@ bool VR_Application::BInitGL()
 
 	SetupTexturemaps();
 	SetupScene();
+	loadCubemap();
+	SetupSkyBox();
 	SetupCameras();
 	SetupStereoRenderTargets();
 	SetupCompanionWindow();
@@ -408,6 +418,14 @@ void VR_Application::Shutdown()
 			glDebugMessageCallback(nullptr, nullptr);
 		}
 		glDeleteBuffers(1, &m_glSceneVertBuffer);
+
+		// ============== self_defined ================
+
+		if (m_unSkyBoxProgramID) glDeleteProgram(m_unSkyBoxProgramID);
+		if (m_unSkyBoxVAO != 0) glDeleteVertexArrays(1, &m_unSkyBoxVAO);
+
+		// ============== self_defined ================
+
 
 		if (m_unSceneProgramID)
 		{
@@ -501,7 +519,7 @@ bool VR_Application::HandleInput()
 	actionSet.ulActionSet = m_actionsetDemo;
 	vr::VRInput()->UpdateActionState(&actionSet, sizeof(actionSet), 1);
 
-	m_bShowCubes = !GetDigitalActionState(m_actionHideCubes);
+	//m_bShowCubes = !GetDigitalActionState(m_actionHideCubes);
 
 	vr::VRInputValueHandle_t ulHapticDevice;
 	if (GetDigitalActionRisingEdge(m_actionTriggerHaptic, &ulHapticDevice))
@@ -535,18 +553,18 @@ bool VR_Application::HandleInput()
 
 
 
-	vr::InputAnalogActionData_t analogData_trigger;
-	if (vr::VRInput()->GetAnalogActionData(m_actiontriggeranalog, &analogData_trigger, sizeof(analogData_trigger), vr::k_ulInvalidInputValueHandle) == vr::VRInputError_None && analogData_trigger.bActive)
-	{
-		triggeranalog = analogData_trigger.x;
+	//vr::InputAnalogActionData_t analogData_trigger;
+	//if (vr::VRInput()->GetAnalogActionData(m_actiontriggeranalog, &analogData_trigger, sizeof(analogData_trigger), vr::k_ulInvalidInputValueHandle) == vr::VRInputError_None && analogData_trigger.bActive)
+	//{
+	//	triggeranalog = analogData_trigger.x;
 
-	}
+	//}
 
-	std::cout << "raw trigger analog: " << triggeranalog << std::endl; // 0-1
-	float force = triggeranalog * 5;
-	spring1.set_externalforce(force);
-	std::cout << "spring now has length: " << spring1.get_CurrentLength() << " and under pressed by external force of " << spring1.get_currentforce() << std::endl;;
-	std::cout << std::endl << "============" << std::endl;
+	//std::cout << "raw trigger analog: " << triggeranalog << std::endl; // 0-1
+	//float force = triggeranalog * 5;
+	//spring1.set_externalforce(force);
+	//std::cout << "spring now has length: " << spring1.get_CurrentLength() << " and under pressed by external force of " << spring1.get_currentforce() << std::endl;;
+	//std::cout << std::endl << "============" << std::endl;
 
 	/*
 	+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -758,6 +776,38 @@ GLuint VR_Application::CompileGLShader(const char* pchShaderName, const char* pc
 //-----------------------------------------------------------------------------
 bool VR_Application::CreateAllShaders()
 {
+	m_unSkyBoxProgramID = CompileGLShader(
+		"skybox",
+		// VS
+		"#version 410\n"
+		"layout(location = 0) in vec3 aPos;\n"
+		"out vec3 TexCoords;\n"
+		"uniform mat4 ViewProjection;"
+		"void main()\n"
+		"{\n"
+			"TexCoords = aPos;\n"
+			"vec4 pos = ViewProjection * vec4(aPos, 1.0);\n"
+			"gl_Position = pos.xyww;\n"
+		"}\n",
+		//FS
+		"#version 410\n"
+		"out vec4 FragColor;\n"
+		"in vec3 TexCoords;\n"
+		"uniform samplerCube skybox;\n"
+		"void main()\n"
+		"{\n"
+		"	FragColor = texture(skybox, TexCoords);\n"
+		"}\n"
+	);
+	m_nSkyBoxLocation = glGetUniformLocation(m_unSkyBoxProgramID, "ViewProjection");
+	//if (m_unSkyBoxProgramID == 1) std::cout << "created skybox shader" << std::endl;
+	if (m_nSkyBoxLocation == -1)
+	{
+		dprintf("Unable to find viewprojection matrix in SkyBox shader\n");
+		return false;
+	}
+
+
 	m_unSceneProgramID = CompileGLShader(
 		"Scene",
 
@@ -884,7 +934,9 @@ bool VR_Application::CreateAllShaders()
 	return m_unSceneProgramID != 0
 		&& m_unControllerTransformProgramID != 0
 		&& m_unRenderModelProgramID != 0
-		&& m_unCompanionWindowProgramID != 0;
+		&& m_unCompanionWindowProgramID != 0
+		// self defined:
+		&& m_unSkyBoxProgramID != 0;
 }
 
 
@@ -919,8 +971,59 @@ bool VR_Application::SetupTexturemaps()
 
 	glBindTexture(GL_TEXTURE_2D, 0);
 
+
+
 	return (m_iTexture != 0);
 }
+
+bool VR_Application::loadCubemap()
+{
+	std::vector<std::string> faces
+	{
+		"../../assets/Texture/skybox/right.png",
+		"../../assets/Texture/skybox/left.png",
+		"../../assets/Texture/skybox/top.png",
+		"../../assets/Texture/skybox/bottom.png",
+		"../../assets/Texture/skybox/front.png",
+		"../../assets/Texture/skybox/back.png"
+	};
+
+	glGenTextures(1, &environmentmaptexture);
+	glBindTexture(GL_TEXTURE_CUBE_MAP, environmentmaptexture);
+
+	std::string strFullPath;
+	std::string sExecutableDirectory = Path_StripFilename(Path_GetExecutablePath());
+
+	std::vector<unsigned char> imageRGBA;
+	unsigned nImageWidth, nImageHeight;
+
+	for (GLuint i = 0; i < faces.size(); i++)
+	{
+		strFullPath = Path_MakeAbsolute(faces[i], sExecutableDirectory);
+		std::cout << "cube map path: " << strFullPath << std::endl;
+		unsigned nError = lodepng::decode(imageRGBA, nImageWidth, nImageHeight, strFullPath.c_str());
+
+		if (nError != 0)
+			return false;
+
+		glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_RGBA, nImageWidth, nImageHeight,
+			0, GL_RGBA, GL_UNSIGNED_BYTE, &imageRGBA[0]);
+		imageRGBA.clear();
+
+	}
+	//glGenerateMipmap(GL_TEXTURE_2D);
+
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+
+
+	return (environmentmaptexture != 0);
+}
+
+
 
 
 //-----------------------------------------------------------------------------
@@ -933,29 +1036,38 @@ void VR_Application::SetupScene()
 
 	std::vector<float> vertdataarray;
 
-	Matrix4 matScale;
-	matScale.scale(m_fScale, m_fScale, m_fScale);
-	Matrix4 matTransform;
-	matTransform.translate(
-		-((float)m_iSceneVolumeWidth * m_fScaleSpacing) / 2.f,
-		-((float)m_iSceneVolumeHeight * m_fScaleSpacing) / 2.f,
-		-((float)m_iSceneVolumeDepth * m_fScaleSpacing) / 2.f);
+	//Matrix4 matScale;
+	//matScale.scale(m_fScale, m_fScale, m_fScale);
+	//Matrix4 matTransform;
+	//matTransform.translate(
+	//	-((float)m_iSceneVolumeWidth * m_fScaleSpacing) / 2.f,
+	//	-((float)m_iSceneVolumeHeight * m_fScaleSpacing) / 2.f,
+	//	-((float)m_iSceneVolumeDepth * m_fScaleSpacing) / 2.f);
 
-	Matrix4 mat = matScale * matTransform;
+	//Matrix4 mat = matScale * matTransform;
 
-	for (int z = 0; z < m_iSceneVolumeDepth; z++)
-	{
-		for (int y = 0; y < m_iSceneVolumeHeight; y++)
-		{
-			for (int x = 0; x < m_iSceneVolumeWidth; x++)
-			{
-				AddCubeToScene(mat, vertdataarray);
-				mat = mat * Matrix4().translate(m_fScaleSpacing, 0, 0);
-			}
-			mat = mat * Matrix4().translate(-((float)m_iSceneVolumeWidth) * m_fScaleSpacing, m_fScaleSpacing, 0);
-		}
-		mat = mat * Matrix4().translate(0, -((float)m_iSceneVolumeHeight) * m_fScaleSpacing, m_fScaleSpacing);
-	}
+	//for (int z = 0; z < m_iSceneVolumeDepth; z++)
+	//{
+	//	for (int y = 0; y < m_iSceneVolumeHeight; y++)
+	//	{
+	//		for (int x = 0; x < m_iSceneVolumeWidth; x++)
+	//		{
+	//			AddCubeToScene(mat, vertdataarray);
+	//			mat = mat * Matrix4().translate(m_fScaleSpacing, 0, 0);
+	//		}
+	//		mat = mat * Matrix4().translate(-((float)m_iSceneVolumeWidth) * m_fScaleSpacing, m_fScaleSpacing, 0);
+	//	}
+	//	mat = mat * Matrix4().translate(0, -((float)m_iSceneVolumeHeight) * m_fScaleSpacing, m_fScaleSpacing);
+	//}
+
+	AddCubeToScene(Matrix4(), vertdataarray);
+
+	std::cout << "=====================\n";
+
+	for (int i = 0; i < vertdataarray.size(); i+=5)
+		std::cout << vertdataarray[i]<<", "<< vertdataarray[i+1] << ", "<< vertdataarray[i+2] << ", "<< vertdataarray[i+3] << ", "<< vertdataarray[i+4] << std::endl;
+
+	std::cout << "=====================\n";
 	m_uiVertcount = vertdataarray.size() / 5;
 
 	glGenVertexArrays(1, &m_unSceneVAO);
@@ -980,6 +1092,8 @@ void VR_Application::SetupScene()
 	glDisableVertexAttribArray(1);
 
 }
+
+
 
 
 void VR_Application::AddCubeVertex(float fl0, float fl1, float fl2, float fl3, float fl4, std::vector<float>& vertdata)
@@ -1312,6 +1426,21 @@ void VR_Application::RenderScene(vr::Hmd_Eye nEye)
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	glEnable(GL_DEPTH_TEST);
 
+	// ==== self define ====
+	glDepthFunc(GL_LEQUAL);
+	glUseProgram(m_unSkyBoxProgramID);
+	glUniformMatrix4fv(m_nSkyBoxLocation, 1, GL_FALSE, GetViewProjectionMatrix_skybox(nEye).get());
+	glActiveTexture(GL_TEXTURE0);
+	//glUniformMatrix4fv(m_nSkyBoxLocation, 1, GL_FALSE, GetCurrentViewProjectionMatrix(nEye).get());
+	glBindVertexArray(m_unSkyBoxVAO);
+	glBindTexture(GL_TEXTURE_CUBE_MAP, environmentmaptexture);
+	glDrawArrays(GL_TRIANGLES, 0, 36);
+	glBindVertexArray(0);
+	glDepthFunc(GL_LESS);
+
+
+	// ==== self define ====
+
 	if (m_bShowCubes)
 	{
 		glUseProgram(m_unSceneProgramID);
@@ -1440,6 +1569,35 @@ Matrix4 VR_Application::GetCurrentViewProjectionMatrix(vr::Hmd_Eye nEye)
 	return matMVP;
 }
 
+// ================= self define ===================
+// remove translation regarding view matrix
+// ================ self define ===================
+
+Matrix4 VR_Application::GetViewProjectionMatrix_skybox(vr::Hmd_Eye nEye)
+{
+
+	
+	Matrix4 matMVP;
+	if (nEye == vr::Eye_Left)
+	{
+		Matrix4 view = m_mat4eyePosLeft;
+		Vector4 zeroVec = Vector4();
+		view.setRow(3, zeroVec);
+		view.setColumn(3, zeroVec); // remove translation of viewing.
+		matMVP = m_mat4ProjectionLeft * view * m_mat4HMDPose;
+	}
+	else if (nEye == vr::Eye_Right)
+	{
+		Matrix4 view = m_mat4eyePosRight;
+		Vector4 zeroVec = Vector4();
+		view.setRow(3, zeroVec);
+		view.setColumn(3, zeroVec); // remove translation of viewing.
+		matMVP = m_mat4ProjectionRight * view * m_mat4HMDPose;
+	}
+
+	return matMVP;
+}
+
 
 void VR_Application::UpdateHMDMatrixPose()
 {
@@ -1562,4 +1720,76 @@ Matrix4 VR_Application::ConvertSteamVRMatrixToMatrix4(const vr::HmdMatrix34_t& m
 		matPose.m[0][3], matPose.m[1][3], matPose.m[2][3], 1.0f
 	);
 	return matrixObj;
+}
+
+// self define
+
+void VR_Application::SetupSkyBox() {
+	if (!m_pHMD)
+		return;
+
+	float skyboxVertices[] = {
+		// positions          
+		-50.0f,  50.0f, -50.0f,
+		-50.0f, -50.0f, -50.0f,
+		 50.0f, -50.0f, -50.0f,
+		 50.0f, -50.0f, -50.0f,
+		 50.0f,  50.0f, -50.0f,
+		-50.0f,  50.0f, -50.0f,
+		-50.0f, -50.0f,  50.0f,
+		-50.0f, -50.0f, -50.0f,
+		-50.0f,  50.0f, -50.0f,
+		-50.0f,  50.0f, -50.0f,
+		-50.0f,  50.0f,  50.0f,
+		-50.0f, -50.0f,  50.0f,
+		 50.0f, -50.0f, -50.0f,
+		 50.0f, -50.0f,  50.0f,
+		 50.0f,  50.0f,  50.0f,
+		 50.0f,  50.0f,  50.0f,
+		 50.0f,  50.0f, -50.0f,
+		 50.0f, -50.0f, -50.0f,
+		-50.0f, -50.0f,  50.0f,
+		-50.0f,  50.0f,  50.0f,
+		 50.0f,  50.0f,  50.0f,
+		 50.0f,  50.0f,  50.0f,
+		 50.0f, -50.0f,  50.0f,
+		-50.0f, -50.0f,  50.0f,
+		-50.0f,  50.0f, -50.0f,
+		 50.0f,  50.0f, -50.0f,
+		 50.0f,  50.0f,  50.0f,
+		 50.0f,  50.0f,  50.0f,
+		-50.0f,  50.0f,  50.0f,
+		-50.0f,  50.0f, -50.0f,
+		-50.0f, -50.0f, -50.0f,
+		-50.0f, -50.0f,  50.0f,
+		 50.0f, -50.0f, -50.0f,
+		 50.0f, -50.0f, -50.0f,
+		-50.0f, -50.0f,  50.0f,
+		 50.0f, -50.0f,  50.0f
+	};
+
+	std::cout << "=====================\n";
+
+	//for (int i = 0; i < sizeof(skyboxVertices); i += 3)
+	//	std::cout << skyboxVertices[i] << ", " << skyboxVertices[i + 1] << ", " << skyboxVertices[i + 2] << std::endl;
+
+	//std::cout << "=====================\n";
+
+	glGenVertexArrays(1, &m_unSkyBoxVAO);
+	glBindVertexArray(m_unSkyBoxVAO);
+
+	glGenBuffers(1, &m_glSkyBoxVertBuffer);
+	glBindBuffer(GL_ARRAY_BUFFER, m_glSkyBoxVertBuffer);
+
+	glBufferData(GL_ARRAY_BUFFER, sizeof(skyboxVertices), &skyboxVertices, GL_STATIC_DRAW);
+
+	GLsizei stride = sizeof(Vector3);// if texcoord needed change to VertexDataScene
+	uintptr_t offset = 0;
+
+	glEnableVertexAttribArray(0);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, stride, (const void*)offset);
+
+	glBindVertexArray(0);
+	//glDisableVertexAttribArray(0);// not sure what it does
+	
 }

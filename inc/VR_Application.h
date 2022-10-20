@@ -48,6 +48,14 @@ public:
 	void RenderCompanionWindow();
 	void RenderScene(vr::Hmd_Eye nEye);
 
+	// =========== self define ==============
+	bool loadCubemap();
+	void SetupSkyBox();
+	Matrix4 GetViewProjectionMatrix_skybox(vr::Hmd_Eye nEye);
+
+	// =========== self define ==============
+
+
 	Matrix4 GetHMDMatrixProjectionEye(vr::Hmd_Eye nEye);
 	Matrix4 GetHMDMatrixPoseEye(vr::Hmd_Eye nEye);
 	Matrix4 GetCurrentViewProjectionMatrix(vr::Hmd_Eye nEye);
@@ -164,9 +172,20 @@ private: // OpenGL bookkeeping
 	GLuint m_unControllerTransformProgramID;
 	GLuint m_unRenderModelProgramID;
 
+	// ========= self-defined ===========
+	GLuint m_unSkyBoxProgramID;
+	GLuint m_nSkyBoxLocation;
+	GLuint m_unSkyBoxVAO;
+	GLuint m_glSkyBoxVertBuffer;
+	//unsigned int m_uiSkyBoxVertcount; // it is 36 in this case
+	GLuint environmentmaptexture;
+
+	// ========= self-defined ===========
+
 	GLint m_nSceneMatrixLocation;
 	GLint m_nControllerMatrixLocation;
 	GLint m_nRenderModelMatrixLocation;
+
 
 	struct FramebufferDesc
 	{
