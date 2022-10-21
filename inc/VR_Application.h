@@ -10,10 +10,9 @@
 #include "VR_CG_OpenGL.h"
 #include <SDL_opengl.h>
 
-
-#include "lodepng.h"
+#include "Player.h"
 #include "Matrices.h"
-#include "pathtools.h"
+
 
 class VR_Application
 {
@@ -63,7 +62,7 @@ public:
 
 	Matrix4 ConvertSteamVRMatrixToMatrix4(const vr::HmdMatrix34_t& matPose);
 
-	GLuint CompileGLShader(const char* pchShaderName, const char* pchVertexShader, const char* pchFragmentShader);
+	//GLuint CompileGLShader(const char* pchShaderName, const char* pchVertexShader, const char* pchFragmentShader);
 	bool CreateAllShaders();
 
 	VR_CG_OpenGL* FindOrLoadRenderModel(const char* pchRenderModelName);
@@ -215,6 +214,7 @@ private: // OpenGL bookkeeping
 	vr::VRActionSetHandle_t m_actionsetDemo = vr::k_ulInvalidActionSetHandle;
 
 	Spring spring1;
+	Player skybox;
 
 };
 

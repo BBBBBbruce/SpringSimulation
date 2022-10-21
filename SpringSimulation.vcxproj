@@ -155,18 +155,28 @@
     <ClCompile Include="shared\pathtools.cpp" />
     <ClCompile Include="shared\strtools.cpp" />
     <ClCompile Include="SpringSimulation.cpp" />
+    <ClCompile Include="src\CubeMap.cpp" />
+    <ClCompile Include="src\DynamicPlayer.cpp" />
     <ClCompile Include="src\GraphicsRenderer.cpp" />
     <ClCompile Include="src\HookeSpring.cpp" />
     <ClCompile Include="src\ObjReader.cpp" />
     <ClCompile Include="src\PhysicsRenderer.cpp" />
+    <ClCompile Include="src\Player.cpp" />
+    <ClCompile Include="src\StaticPlayer.cpp" />
+    <ClCompile Include="src\Tool.cpp" />
     <ClCompile Include="src\VR_Application.cpp" />
     <ClCompile Include="src\VR_CG_OpenGL.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="inc\CubeMap.h" />
+    <ClInclude Include="inc\DynamicPlayer.h" />
     <ClInclude Include="inc\GraphicsRenderer.h" />
     <ClInclude Include="inc\HookeSpring.h" />
     <ClInclude Include="inc\ObjReader.h" />
     <ClInclude Include="inc\PhysicsRenderer.h" />
+    <ClInclude Include="inc\Player.h" />
+    <ClInclude Include="inc\StaticPlayer.h" />
+    <ClInclude Include="inc\Tool.h" />
     <ClInclude Include="inc\VR_Application.h" />
     <ClInclude Include="inc\VR_CG_OpenGL.h" />
     <ClInclude Include="shared\compat.h" />
@@ -178,6 +188,8 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="README.md" />
+    <None Include="Shaders\skybox.frag" />
+    <None Include="Shaders\skybox.vert" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

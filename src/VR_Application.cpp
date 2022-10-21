@@ -88,24 +88,6 @@ bool GetDigitalActionState(vr::VRActionHandle_t action, vr::VRInputValueHandle_t
 	return actionData.bActive && actionData.bState;
 }
 
-//-----------------------------------------------------------------------------
-// Purpose: Outputs a set of optional arguments to debugging output, using
-//          the printf format setting specified in fmt*.
-//-----------------------------------------------------------------------------
-void dprintf(const char* fmt, ...)
-{
-	va_list args;
-	char buffer[2048];
-
-	va_start(args, fmt);
-	vsprintf_s(buffer, fmt, args);
-	va_end(args);
-
-	if (g_bPrintf)
-		printf("%s", buffer);
-
-	OutputDebugStringA(buffer);
-}
 
 //-----------------------------------------------------------------------------
 // Purpose: Constructor
@@ -139,10 +121,10 @@ VR_Application::VR_Application(int argc, char* argv[])
 	, m_strPoseClasses("")
 	, m_bShowCubes(true)
 	// self define
-	, m_unSkyBoxProgramID(0)
+	/*, m_unSkyBoxProgramID(0)
 	, m_nSkyBoxLocation(-1)
 	, m_unSkyBoxVAO(0)
-	, m_glSkyBoxVertBuffer(0)
+	, m_glSkyBoxVertBuffer(0)*/
 	
 {
 
@@ -177,6 +159,8 @@ VR_Application::VR_Application(int argc, char* argv[])
 	// other initialization tasks are done in BInit
 	memset(m_rDevClassChar, 0, sizeof(m_rDevClassChar));
 	spring1 = Spring(4, 2.5, 6);
+	skybox = Player("skybox", "../../Shaders/");
+
 };
 
 
@@ -297,7 +281,7 @@ bool VR_Application::BInit()
 	m_iTexture = 0;
 	m_uiVertcount = 0;
 
-	environmentmaptexture = 0;
+	//environmentmaptexture = 0;
 
 	// 		m_MillisecondsTimer.start(1, this);
 	// 		m_SecondsTimer.start(1000, this);
@@ -333,6 +317,10 @@ bool VR_Application::BInit()
 
 	vr::VRInput()->GetActionHandle("/actions/demo/in/triggerAnalog", &m_actiontriggeranalog);
 
+	// load skybox:
+	
+	skybox.PInit();
+
 	return true;
 }
 
@@ -364,12 +352,13 @@ bool VR_Application::BInitGL()
 	}
 
 	if (!CreateAllShaders())
+		//std::cout << " this is the problem" << std::endl;
 		return false;
 
 	SetupTexturemaps();
 	SetupScene();
-	loadCubemap();
-	SetupSkyBox();
+	//loadCubemap();
+	//SetupSkyBox();
 	SetupCameras();
 	SetupStereoRenderTargets();
 	SetupCompanionWindow();
@@ -421,9 +410,12 @@ void VR_Application::Shutdown()
 
 		// ============== self_defined ================
 
-		if (m_unSkyBoxProgramID) glDeleteProgram(m_unSkyBoxProgramID);
+		/*if (m_unSkyBoxProgramID != 0) glDeleteProgram(m_unSkyBoxProgramID);
 		if (m_unSkyBoxVAO != 0) glDeleteVertexArrays(1, &m_unSkyBoxVAO);
+		if (m_glSkyBoxVertBuffer != 0) glDeleteBuffers(1, &m_glSkyBoxVertBuffer);*/
 
+		
+		skybox.~Player();
 		// ============== self_defined ================
 
 
@@ -716,59 +708,61 @@ void VR_Application::RenderFrame()
 // Purpose: Compiles a GL shader program and returns the handle. Returns 0 if
 //			the shader couldn't be compiled for some reason.
 //-----------------------------------------------------------------------------
-GLuint VR_Application::CompileGLShader(const char* pchShaderName, const char* pchVertexShader, const char* pchFragmentShader)
-{
-	GLuint unProgramID = glCreateProgram();
+//
 
-	GLuint nSceneVertexShader = glCreateShader(GL_VERTEX_SHADER);
-	glShaderSource(nSceneVertexShader, 1, &pchVertexShader, NULL);
-	glCompileShader(nSceneVertexShader);
-
-	GLint vShaderCompiled = GL_FALSE;
-	glGetShaderiv(nSceneVertexShader, GL_COMPILE_STATUS, &vShaderCompiled);
-	if (vShaderCompiled != GL_TRUE)
-	{
-		dprintf("%s - Unable to compile vertex shader %d!\n", pchShaderName, nSceneVertexShader);
-		glDeleteProgram(unProgramID);
-		glDeleteShader(nSceneVertexShader);
-		return 0;
-	}
-	glAttachShader(unProgramID, nSceneVertexShader);
-	glDeleteShader(nSceneVertexShader); // the program hangs onto this once it's attached
-
-	GLuint  nSceneFragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
-	glShaderSource(nSceneFragmentShader, 1, &pchFragmentShader, NULL);
-	glCompileShader(nSceneFragmentShader);
-
-	GLint fShaderCompiled = GL_FALSE;
-	glGetShaderiv(nSceneFragmentShader, GL_COMPILE_STATUS, &fShaderCompiled);
-	if (fShaderCompiled != GL_TRUE)
-	{
-		dprintf("%s - Unable to compile fragment shader %d!\n", pchShaderName, nSceneFragmentShader);
-		glDeleteProgram(unProgramID);
-		glDeleteShader(nSceneFragmentShader);
-		return 0;
-	}
-
-	glAttachShader(unProgramID, nSceneFragmentShader);
-	glDeleteShader(nSceneFragmentShader); // the program hangs onto this once it's attached
-
-	glLinkProgram(unProgramID);
-
-	GLint programSuccess = GL_TRUE;
-	glGetProgramiv(unProgramID, GL_LINK_STATUS, &programSuccess);
-	if (programSuccess != GL_TRUE)
-	{
-		dprintf("%s - Error linking program %d!\n", pchShaderName, unProgramID);
-		glDeleteProgram(unProgramID);
-		return 0;
-	}
-
-	glUseProgram(unProgramID);
-	glUseProgram(0);
-
-	return unProgramID;
-}
+//GLuint VR_Application::CompileGLShader(const char* pchShaderName, const char* pchVertexShader, const char* pchFragmentShader)
+//{
+//	GLuint unProgramID = glCreateProgram();
+//
+//	GLuint nSceneVertexShader = glCreateShader(GL_VERTEX_SHADER);
+//	glShaderSource(nSceneVertexShader, 1, &pchVertexShader, NULL);
+//	glCompileShader(nSceneVertexShader);
+//
+//	GLint vShaderCompiled = GL_FALSE;
+//	glGetShaderiv(nSceneVertexShader, GL_COMPILE_STATUS, &vShaderCompiled);
+//	if (vShaderCompiled != GL_TRUE)
+//	{
+//		dprintf("%s - Unable to compile vertex shader %d!\n", pchShaderName, nSceneVertexShader);
+//		glDeleteProgram(unProgramID);
+//		glDeleteShader(nSceneVertexShader);
+//		return 0;
+//	}
+//	glAttachShader(unProgramID, nSceneVertexShader);
+//	glDeleteShader(nSceneVertexShader); // the program hangs onto this once it's attached
+//
+//	GLuint  nSceneFragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
+//	glShaderSource(nSceneFragmentShader, 1, &pchFragmentShader, NULL);
+//	glCompileShader(nSceneFragmentShader);
+//
+//	GLint fShaderCompiled = GL_FALSE;
+//	glGetShaderiv(nSceneFragmentShader, GL_COMPILE_STATUS, &fShaderCompiled);
+//	if (fShaderCompiled != GL_TRUE)
+//	{
+//		dprintf("%s - Unable to compile fragment shader %d!\n", pchShaderName, nSceneFragmentShader);
+//		glDeleteProgram(unProgramID);
+//		glDeleteShader(nSceneFragmentShader);
+//		return 0;
+//	}
+//
+//	glAttachShader(unProgramID, nSceneFragmentShader);
+//	glDeleteShader(nSceneFragmentShader); // the program hangs onto this once it's attached
+//
+//	glLinkProgram(unProgramID);
+//
+//	GLint programSuccess = GL_TRUE;
+//	glGetProgramiv(unProgramID, GL_LINK_STATUS, &programSuccess);
+//	if (programSuccess != GL_TRUE)
+//	{
+//		dprintf("%s - Error linking program %d!\n", pchShaderName, unProgramID);
+//		glDeleteProgram(unProgramID);
+//		return 0;
+//	}
+//
+//	glUseProgram(unProgramID);
+//	glUseProgram(0);
+//
+//	return unProgramID;
+//}
 
 
 //-----------------------------------------------------------------------------
@@ -776,36 +770,36 @@ GLuint VR_Application::CompileGLShader(const char* pchShaderName, const char* pc
 //-----------------------------------------------------------------------------
 bool VR_Application::CreateAllShaders()
 {
-	m_unSkyBoxProgramID = CompileGLShader(
-		"skybox",
-		// VS
-		"#version 410\n"
-		"layout(location = 0) in vec3 aPos;\n"
-		"out vec3 TexCoords;\n"
-		"uniform mat4 ViewProjection;"
-		"void main()\n"
-		"{\n"
-			"TexCoords = aPos;\n"
-			"vec4 pos = ViewProjection * vec4(aPos, 1.0);\n"
-			"gl_Position = pos.xyww;\n"
-		"}\n",
-		//FS
-		"#version 410\n"
-		"out vec4 FragColor;\n"
-		"in vec3 TexCoords;\n"
-		"uniform samplerCube skybox;\n"
-		"void main()\n"
-		"{\n"
-		"	FragColor = texture(skybox, TexCoords);\n"
-		"}\n"
-	);
-	m_nSkyBoxLocation = glGetUniformLocation(m_unSkyBoxProgramID, "ViewProjection");
-	//if (m_unSkyBoxProgramID == 1) std::cout << "created skybox shader" << std::endl;
-	if (m_nSkyBoxLocation == -1)
-	{
-		dprintf("Unable to find viewprojection matrix in SkyBox shader\n");
-		return false;
-	}
+	//m_unSkyBoxProgramID = CompileGLShader(
+	//	"skybox",
+	//	// VS
+	//	"#version 410\n"
+	//	"layout(location = 0) in vec3 aPos;\n"
+	//	"out vec3 TexCoords;\n"
+	//	"uniform mat4 ViewProjection;"
+	//	"void main()\n"
+	//	"{\n"
+	//		"TexCoords = aPos;\n"
+	//		"vec4 pos = ViewProjection * vec4(aPos, 1.0);\n"
+	//		"gl_Position = pos.xyww;\n"
+	//	"}\n",
+	//	//FS
+	//	"#version 410\n"
+	//	"out vec4 FragColor;\n"
+	//	"in vec3 TexCoords;\n"
+	//	"uniform samplerCube skybox;\n"
+	//	"void main()\n"
+	//	"{\n"
+	//	"	FragColor = texture(skybox, TexCoords);\n"
+	//	"}\n"
+	//);
+	//m_nSkyBoxLocation = glGetUniformLocation(m_unSkyBoxProgramID, "ViewProjection");
+	////if (m_unSkyBoxProgramID == 1) std::cout << "created skybox shader" << std::endl;
+	//if (m_nSkyBoxLocation == -1)
+	//{
+	//	dprintf("Unable to find viewprojection matrix in SkyBox shader\n");
+	//	return false;
+	//}
 
 
 	m_unSceneProgramID = CompileGLShader(
@@ -934,9 +928,9 @@ bool VR_Application::CreateAllShaders()
 	return m_unSceneProgramID != 0
 		&& m_unControllerTransformProgramID != 0
 		&& m_unRenderModelProgramID != 0
-		&& m_unCompanionWindowProgramID != 0
+		&& m_unCompanionWindowProgramID != 0;
 		// self defined:
-		&& m_unSkyBoxProgramID != 0;
+		//&& m_unSkyBoxProgramID != 0;
 }
 
 
@@ -1427,17 +1421,18 @@ void VR_Application::RenderScene(vr::Hmd_Eye nEye)
 	glEnable(GL_DEPTH_TEST);
 
 	// ==== self define ====
-	glDepthFunc(GL_LEQUAL);
-	glUseProgram(m_unSkyBoxProgramID);
-	glUniformMatrix4fv(m_nSkyBoxLocation, 1, GL_FALSE, GetViewProjectionMatrix_skybox(nEye).get());
-	glActiveTexture(GL_TEXTURE0);
-	//glUniformMatrix4fv(m_nSkyBoxLocation, 1, GL_FALSE, GetCurrentViewProjectionMatrix(nEye).get());
-	glBindVertexArray(m_unSkyBoxVAO);
-	glBindTexture(GL_TEXTURE_CUBE_MAP, environmentmaptexture);
-	glDrawArrays(GL_TRIANGLES, 0, 36);
-	glBindVertexArray(0);
-	glDepthFunc(GL_LESS);
+	//glDepthFunc(GL_LEQUAL);
+	//glUseProgram(m_unSkyBoxProgramID);
+	//glUniformMatrix4fv(m_nSkyBoxLocation, 1, GL_FALSE, GetViewProjectionMatrix_skybox(nEye).get());
+	//glActiveTexture(GL_TEXTURE0);
+	////glUniformMatrix4fv(m_nSkyBoxLocation, 1, GL_FALSE, GetCurrentViewProjectionMatrix(nEye).get());
+	//glBindVertexArray(m_unSkyBoxVAO);
+	//glBindTexture(GL_TEXTURE_CUBE_MAP, environmentmaptexture);
+	//glDrawArrays(GL_TRIANGLES, 0, 36);
+	//glBindVertexArray(0);
+	//glDepthFunc(GL_LESS);
 
+	skybox.Render(GetViewProjectionMatrix_skybox(nEye));
 
 	// ==== self define ====
 

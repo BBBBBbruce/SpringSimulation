@@ -51,9 +51,6 @@ int main(int argc, char* argv[])
         return 1;
     }
 
-
-
-
     pMainApplication->RunMainLoop();
 
     pMainApplication->Shutdown();
