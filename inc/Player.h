@@ -1,4 +1,4 @@
-#ifndef PLAYER_h
+#ifndef PLAYER_H
 #define PLAYER_H
 
 #include <vector>
@@ -23,8 +23,10 @@ private:
 	GLuint VAO;
 	GLuint VBO;
 	GLuint MatrixLocation;
+
+protected:
 	GLuint cubemap;
-	float* Vertices;
+	vector<float> Vertices;
 
 
 public:
@@ -33,15 +35,17 @@ public:
 	Player(string name, string path);
 	~Player();
 	void PInit();
-	void LoadVertices(string path);
-	void DefineVertices();
+	virtual void DefineVertices(string path = "no path") = 0;
 	void Render(Matrix4 projectionview);
 
 private:
 	bool CreateShader();
 	void LoadShader(string& Vert, string& Frag);
 	void setup();
-	bool bindtexture();
+	
+
+protected:
+	virtual bool bindtexture() = 0;
 
 };
 

@@ -19,7 +19,6 @@ Player::Player(string name)
 	, cubemap(0)
 {
 	// invisable
-	Vertices = NULL;
 	debugName = name;
 
 }
@@ -32,7 +31,6 @@ Player::Player(string name, string path)
 	, cubemap(0)
 {
 	ShaderPath = path;
-	Vertices = NULL;
 	debugName = name;
 }
 
@@ -42,7 +40,7 @@ Player::~Player()
 	if (VAO != 0)				glDeleteVertexArrays(1, &VAO);
 	if (VBO != 0)				glDeleteBuffers(1, &VBO);
 
-	delete Vertices;
+	Vertices.clear();
 }
 
 void Player::PInit()
@@ -54,54 +52,52 @@ void Player::PInit()
 	setup();
 }
 
-void Player::LoadVertices(string path)
-{
-	// loading .obj / .stl/ .usd etc.
-}
 
-void Player::DefineVertices()
-{
-		Vertices = new float[36*3] {
-		// positions          
-		-50.0f,  50.0f, -50.0f,
-		-50.0f, -50.0f, -50.0f,
-		 50.0f, -50.0f, -50.0f,
-		 50.0f, -50.0f, -50.0f,
-		 50.0f,  50.0f, -50.0f,
-		-50.0f,  50.0f, -50.0f,
-		-50.0f, -50.0f,  50.0f,
-		-50.0f, -50.0f, -50.0f,
-		-50.0f,  50.0f, -50.0f,
-		-50.0f,  50.0f, -50.0f,
-		-50.0f,  50.0f,  50.0f,
-		-50.0f, -50.0f,  50.0f,
-		 50.0f, -50.0f, -50.0f,
-		 50.0f, -50.0f,  50.0f,
-		 50.0f,  50.0f,  50.0f,
-		 50.0f,  50.0f,  50.0f,
-		 50.0f,  50.0f, -50.0f,
-		 50.0f, -50.0f, -50.0f,
-		-50.0f, -50.0f,  50.0f,
-		-50.0f,  50.0f,  50.0f,
-		 50.0f,  50.0f,  50.0f,
-		 50.0f,  50.0f,  50.0f,
-		 50.0f, -50.0f,  50.0f,
-		-50.0f, -50.0f,  50.0f,
-		-50.0f,  50.0f, -50.0f,
-		 50.0f,  50.0f, -50.0f,
-		 50.0f,  50.0f,  50.0f,
-		 50.0f,  50.0f,  50.0f,
-		-50.0f,  50.0f,  50.0f,
-		-50.0f,  50.0f, -50.0f,
-		-50.0f, -50.0f, -50.0f,
-		-50.0f, -50.0f,  50.0f,
-		 50.0f, -50.0f, -50.0f,
-		 50.0f, -50.0f, -50.0f,
-		-50.0f, -50.0f,  50.0f,
-		 50.0f, -50.0f,  50.0f
-	};
-
-}
+//void Player::DefineVertices(string path)
+//{
+//	if (path == "no path") {
+//		Vertices = {
+//			// positions          
+//			-50.0f,  50.0f, -50.0f,
+//			-50.0f, -50.0f, -50.0f,
+//			 50.0f, -50.0f, -50.0f,
+//			 50.0f, -50.0f, -50.0f,
+//			 50.0f,  50.0f, -50.0f,
+//			-50.0f,  50.0f, -50.0f,
+//			-50.0f, -50.0f,  50.0f,
+//			-50.0f, -50.0f, -50.0f,
+//			-50.0f,  50.0f, -50.0f,
+//			-50.0f,  50.0f, -50.0f,
+//			-50.0f,  50.0f,  50.0f,
+//			-50.0f, -50.0f,  50.0f,
+//			 50.0f, -50.0f, -50.0f,
+//			 50.0f, -50.0f,  50.0f,
+//			 50.0f,  50.0f,  50.0f,
+//			 50.0f,  50.0f,  50.0f,
+//			 50.0f,  50.0f, -50.0f,
+//			 50.0f, -50.0f, -50.0f,
+//			-50.0f, -50.0f,  50.0f,
+//			-50.0f,  50.0f,  50.0f,
+//			 50.0f,  50.0f,  50.0f,
+//			 50.0f,  50.0f,  50.0f,
+//			 50.0f, -50.0f,  50.0f,
+//			-50.0f, -50.0f,  50.0f,
+//			-50.0f,  50.0f, -50.0f,
+//			 50.0f,  50.0f, -50.0f,
+//			 50.0f,  50.0f,  50.0f,
+//			 50.0f,  50.0f,  50.0f,
+//			-50.0f,  50.0f,  50.0f,
+//			-50.0f,  50.0f, -50.0f,
+//			-50.0f, -50.0f, -50.0f,
+//			-50.0f, -50.0f,  50.0f,
+//			 50.0f, -50.0f, -50.0f,
+//			 50.0f, -50.0f, -50.0f,
+//			-50.0f, -50.0f,  50.0f,
+//			 50.0f, -50.0f,  50.0f
+//		};
+//	}
+//
+//}
 
 void Player::Render(Matrix4 projectionview)
 {
@@ -125,31 +121,7 @@ bool Player::CreateShader()
 	LoadShader(ShaderVert, ShaderFrag);
 	//cout << ShaderFrag << endl;
 
-	//ShaderProgramID = CompileGLShader(debugName.c_str(), ShaderVert.c_str(), ShaderFrag.c_str());
-
-	ShaderProgramID = CompileGLShader(
-		"skybox",
-		// VS
-		"#version 410\n"
-		"layout(location = 0) in vec3 aPos;\n"
-		"out vec3 TexCoords;\n"
-		"uniform mat4 ViewProjection;"
-		"void main()\n"
-		"{\n"
-		"TexCoords = aPos;\n"
-		"vec4 pos = ViewProjection * vec4(aPos, 1.0);\n"
-		"gl_Position = pos.xyww;\n"
-		"}\n",
-		//FS
-		"#version 410\n"
-		"out vec4 FragColor;\n"
-		"in vec3 TexCoords;\n"
-		"uniform samplerCube skybox;\n"
-		"void main()\n"
-		"{\n"
-		"	FragColor = texture(skybox, TexCoords);\n"
-		"}\n"
-	);
+	ShaderProgramID = CompileGLShader(debugName.c_str(), ShaderVert.c_str(), ShaderFrag.c_str());
 
 	MatrixLocation = glGetUniformLocation(ShaderProgramID, "ViewProjection");
 	//if (m_unSkyBoxProgramID == 1) std::cout << "created skybox shader" << std::endl;
@@ -207,48 +179,7 @@ void Player::LoadShader(string& Vert, string& Frag)
 
 void Player::setup()
 {
-	//DefineVertices();
-
-	float Vertices[] = {
-		// positions          
-		-50.0f,  50.0f, -50.0f,
-		-50.0f, -50.0f, -50.0f,
-		 50.0f, -50.0f, -50.0f,
-		 50.0f, -50.0f, -50.0f,
-		 50.0f,  50.0f, -50.0f,
-		-50.0f,  50.0f, -50.0f,
-		-50.0f, -50.0f,  50.0f,
-		-50.0f, -50.0f, -50.0f,
-		-50.0f,  50.0f, -50.0f,
-		-50.0f,  50.0f, -50.0f,
-		-50.0f,  50.0f,  50.0f,
-		-50.0f, -50.0f,  50.0f,
-		 50.0f, -50.0f, -50.0f,
-		 50.0f, -50.0f,  50.0f,
-		 50.0f,  50.0f,  50.0f,
-		 50.0f,  50.0f,  50.0f,
-		 50.0f,  50.0f, -50.0f,
-		 50.0f, -50.0f, -50.0f,
-		-50.0f, -50.0f,  50.0f,
-		-50.0f,  50.0f,  50.0f,
-		 50.0f,  50.0f,  50.0f,
-		 50.0f,  50.0f,  50.0f,
-		 50.0f, -50.0f,  50.0f,
-		-50.0f, -50.0f,  50.0f,
-		-50.0f,  50.0f, -50.0f,
-		 50.0f,  50.0f, -50.0f,
-		 50.0f,  50.0f,  50.0f,
-		 50.0f,  50.0f,  50.0f,
-		-50.0f,  50.0f,  50.0f,
-		-50.0f,  50.0f, -50.0f,
-		-50.0f, -50.0f, -50.0f,
-		-50.0f, -50.0f,  50.0f,
-		 50.0f, -50.0f, -50.0f,
-		 50.0f, -50.0f, -50.0f,
-		-50.0f, -50.0f,  50.0f,
-		 50.0f, -50.0f,  50.0f
-	};
-
+	DefineVertices();
 
 	glGenVertexArrays(1, &VAO);
 	glBindVertexArray(VAO);
@@ -256,7 +187,7 @@ void Player::setup()
 	glGenBuffers(1, &VBO);
 	glBindBuffer(GL_ARRAY_BUFFER, VBO);
 
-	glBufferData(GL_ARRAY_BUFFER, sizeof(Vertices), &Vertices, GL_STATIC_DRAW);
+	glBufferData(GL_ARRAY_BUFFER, sizeof(float) * Vertices.size(), &Vertices[0], GL_STATIC_DRAW);
 
 	GLsizei stride = sizeof(Vector3);// if texcoord needed change to VertexDataScene
 	uintptr_t offset = 0;
@@ -267,48 +198,48 @@ void Player::setup()
 	glBindVertexArray(0);
 }
 
-bool Player::bindtexture()
-{
-	std::vector<std::string> faces
-	{
-		"../../assets/Texture/skybox/right.png",
-		"../../assets/Texture/skybox/left.png",
-		"../../assets/Texture/skybox/top.png",
-		"../../assets/Texture/skybox/bottom.png",
-		"../../assets/Texture/skybox/front.png",
-		"../../assets/Texture/skybox/back.png"
-	};
-
-	glGenTextures(1, &cubemap);
-	glBindTexture(GL_TEXTURE_CUBE_MAP, cubemap);
-
-	std::string strFullPath;
-	std::string sExecutableDirectory = Path_StripFilename(Path_GetExecutablePath());
-
-	std::vector<unsigned char> imageRGBA;
-	unsigned nImageWidth, nImageHeight;
-
-	for (GLuint i = 0; i < faces.size(); i++)
-	{
-		strFullPath = Path_MakeAbsolute(faces[i], sExecutableDirectory);
-		std::cout << "cube map path: " << strFullPath << std::endl;
-		unsigned nError = lodepng::decode(imageRGBA, nImageWidth, nImageHeight, strFullPath.c_str());
-
-		if (nError != 0)
-			return false;
-
-		glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_RGBA, nImageWidth, nImageHeight,
-			0, GL_RGBA, GL_UNSIGNED_BYTE, &imageRGBA[0]);
-		imageRGBA.clear();
-
-	}
-	//glGenerateMipmap(GL_TEXTURE_2D);
-
-	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
-
-	return (cubemap != 0);
-}
+//bool Player::bindtexture()
+//{
+//	std::vector<std::string> faces
+//	{
+//		"../../assets/Texture/skybox/right.png",
+//		"../../assets/Texture/skybox/left.png",
+//		"../../assets/Texture/skybox/top.png",
+//		"../../assets/Texture/skybox/bottom.png",
+//		"../../assets/Texture/skybox/front.png",
+//		"../../assets/Texture/skybox/back.png"
+//	};
+//
+//	glGenTextures(1, &cubemap);
+//	glBindTexture(GL_TEXTURE_CUBE_MAP, cubemap);
+//
+//	std::string strFullPath;
+//	std::string sExecutableDirectory = Path_StripFilename(Path_GetExecutablePath());
+//
+//	std::vector<unsigned char> imageRGBA;
+//	unsigned nImageWidth, nImageHeight;
+//
+//	for (GLuint i = 0; i < faces.size(); i++)
+//	{
+//		strFullPath = Path_MakeAbsolute(faces[i], sExecutableDirectory);
+//		std::cout << "cube map path: " << strFullPath << std::endl;
+//		unsigned nError = lodepng::decode(imageRGBA, nImageWidth, nImageHeight, strFullPath.c_str());
+//
+//		if (nError != 0)
+//			return false;
+//
+//		glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_RGBA, nImageWidth, nImageHeight,
+//			0, GL_RGBA, GL_UNSIGNED_BYTE, &imageRGBA[0]);
+//		imageRGBA.clear();
+//
+//	}
+//	//glGenerateMipmap(GL_TEXTURE_2D);
+//
+//	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+//	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+//	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+//	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+//	glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+//
+//	return (cubemap != 0);
+//}

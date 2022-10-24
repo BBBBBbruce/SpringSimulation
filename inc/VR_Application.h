@@ -12,6 +12,7 @@
 
 #include "Player.h"
 #include "Matrices.h"
+#include "CubeMap.h"
 
 
 class VR_Application
@@ -214,7 +215,7 @@ private: // OpenGL bookkeeping
 	vr::VRActionSetHandle_t m_actionsetDemo = vr::k_ulInvalidActionSetHandle;
 
 	Spring spring1;
-	Player skybox;
+	Player* skybox;
 
 };
 

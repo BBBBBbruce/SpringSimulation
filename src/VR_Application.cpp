@@ -159,7 +159,7 @@ VR_Application::VR_Application(int argc, char* argv[])
 	// other initialization tasks are done in BInit
 	memset(m_rDevClassChar, 0, sizeof(m_rDevClassChar));
 	spring1 = Spring(4, 2.5, 6);
-	skybox = Player("skybox", "../../Shaders/");
+	skybox = new CubeMap("skybox", "../../Shaders/");
 
 };
 
@@ -319,7 +319,7 @@ bool VR_Application::BInit()
 
 	// load skybox:
 	
-	skybox.PInit();
+	skybox->PInit();
 
 	return true;
 }
@@ -415,7 +415,7 @@ void VR_Application::Shutdown()
 		if (m_glSkyBoxVertBuffer != 0) glDeleteBuffers(1, &m_glSkyBoxVertBuffer);*/
 
 		
-		skybox.~Player();
+		delete skybox;
 		// ============== self_defined ================
 
 
@@ -1432,7 +1432,7 @@ void VR_Application::RenderScene(vr::Hmd_Eye nEye)
 	//glBindVertexArray(0);
 	//glDepthFunc(GL_LESS);
 
-	skybox.Render(GetViewProjectionMatrix_skybox(nEye));
+	skybox->Render(GetViewProjectionMatrix_skybox(nEye));
 
 	// ==== self define ====
 
