@@ -160,6 +160,7 @@ VR_Application::VR_Application(int argc, char* argv[])
 	memset(m_rDevClassChar, 0, sizeof(m_rDevClassChar));
 	spring1 = Spring(4, 2.5, 6);
 	skybox = new CubeMap("skybox", "../../Shaders/");
+	ground = new StaticPlayer("ground", "../../Shaders/");
 
 };
 
@@ -300,7 +301,7 @@ bool VR_Application::BInit()
 
 	vr::VRInput()->SetActionManifestPath(Path_MakeAbsolute("../../assets/Config/hellovr_actions.json", Path_StripFilename(Path_GetExecutablePath())).c_str());
 
-	vr::VRInput()->GetActionHandle("/actions/demo/in/HideCubes", &m_actionHideCubes);
+	vr::VRInput()->GetActionHandle("/actions/demo/iskn/HideCubes", &m_actionHideCubes);
 	vr::VRInput()->GetActionHandle("/actions/demo/in/HideThisController", &m_actionHideThisController);
 	vr::VRInput()->GetActionHandle("/actions/demo/in/TriggerHaptic", &m_actionTriggerHaptic);
 	vr::VRInput()->GetActionHandle("/actions/demo/in/AnalogInput", &m_actionAnalongInput);
@@ -317,9 +318,17 @@ bool VR_Application::BInit()
 
 	vr::VRInput()->GetActionHandle("/actions/demo/in/triggerAnalog", &m_actiontriggeranalog);
 
-	// load skybox:
+	// load skybox: Cubemap, no need for tranlation
 	
 	skybox->PInit();
+	skybox->DefineVertices(); 
+	skybox->setup();
+
+	ground->setTextureMap("../../assets/Texture/brick_mortar_uc0ndcifw/");
+	ground->PInit();
+	ground->DefineVertices("../../assets/Model/plane.obj");
+	ground->scale(0.8,0.8,0.8);//default
+	ground->setup();
 
 	return true;
 }
@@ -416,6 +425,7 @@ void VR_Application::Shutdown()
 
 		
 		delete skybox;
+		delete ground;
 		// ============== self_defined ================
 
 
@@ -1056,12 +1066,12 @@ void VR_Application::SetupScene()
 
 	AddCubeToScene(Matrix4(), vertdataarray);
 
-	std::cout << "=====================\n";
+	/*std::cout << "=====================\n";
 
 	for (int i = 0; i < vertdataarray.size(); i+=5)
 		std::cout << vertdataarray[i]<<", "<< vertdataarray[i+1] << ", "<< vertdataarray[i+2] << ", "<< vertdataarray[i+3] << ", "<< vertdataarray[i+4] << std::endl;
 
-	std::cout << "=====================\n";
+	std::cout << "=====================\n";*/
 	m_uiVertcount = vertdataarray.size() / 5;
 
 	glGenVertexArrays(1, &m_unSceneVAO);
@@ -1070,6 +1080,10 @@ void VR_Application::SetupScene()
 	glGenBuffers(1, &m_glSceneVertBuffer);
 	glBindBuffer(GL_ARRAY_BUFFER, m_glSceneVertBuffer);
 	glBufferData(GL_ARRAY_BUFFER, sizeof(float) * vertdataarray.size(), &vertdataarray[0], GL_STATIC_DRAW);
+
+	/*cout << "the cube vertices: " << endl;
+	for (auto i = 0; i < vertdataarray.size(); i += 3)
+		cout << vertdataarray[i] << " " << vertdataarray[i + 1] << " "<<vertdataarray[i + 2] << endl;*/
 
 	GLsizei stride = sizeof(VertexDataScene);
 	uintptr_t offset = 0;
@@ -1432,7 +1446,18 @@ void VR_Application::RenderScene(vr::Hmd_Eye nEye)
 	//glBindVertexArray(0);
 	//glDepthFunc(GL_LESS);
 
+
 	skybox->Render(GetViewProjectionMatrix_skybox(nEye));
+	Vector3 lightpos(-35.0, 40, -50.0);
+	ground->setVec3_Shader("lightPos",lightpos);
+	Vector3 viewpos = GetVRViewPos(nEye);
+	ground->setVec3_Shader("viewPos",viewpos);
+
+	//cout << "light Pos: " << lightpos << endl;
+	//cout << "view pos: " << viewpos << endl;
+
+	ground->Render(GetCurrentViewProjectionMatrix(nEye));
+	//ground->Render(GetViewProjectionMatrix_skybox(nEye));
 
 	// ==== self define ====
 
@@ -1506,6 +1531,8 @@ void VR_Application::RenderCompanionWindow()
 }
 
 
+
+
 //-----------------------------------------------------------------------------
 // Purpose: Gets a Matrix Projection Eye with respect to nEye.
 //-----------------------------------------------------------------------------
@@ -1542,8 +1569,7 @@ Matrix4 VR_Application::GetHMDMatrixPoseEye(vr::Hmd_Eye nEye)
 	);
 
 	return matrixObj.invert();
-}
-
+} 
 
 //-----------------------------------------------------------------------------
 // Purpose: Gets a Current View Projection Matrix with respect to nEye,
@@ -1554,14 +1580,38 @@ Matrix4 VR_Application::GetCurrentViewProjectionMatrix(vr::Hmd_Eye nEye)
 	Matrix4 matMVP;
 	if (nEye == vr::Eye_Left)
 	{
+		//cout << "left eye position: \n" << m_mat4eyePosLeft << endl;
+		//cout << "left HMD position: \n" << m_mat4HMDPose << endl;
 		matMVP = m_mat4ProjectionLeft * m_mat4eyePosLeft * m_mat4HMDPose;
 	}
 	else if (nEye == vr::Eye_Right)
 	{
+		//cout << "right eye position: \n" << m_mat4eyePosLeft << endl;
+		//cout << "right HMD position: \n" << m_mat4HMDPose << endl;
 		matMVP = m_mat4ProjectionRight * m_mat4eyePosRight * m_mat4HMDPose;
 	}
 
 	return matMVP;
+}
+
+Vector3 VR_Application::GetVRViewPos(vr::Hmd_Eye nEye)
+{
+	Matrix4 matMVP;
+	
+	//m_pHMD->GetEyeToHeadTransform()
+	if (nEye == vr::Eye_Left)
+	{
+		matMVP =  m_mat4eyePosLeft * m_mat4HMDPose;
+	}
+	else if (nEye == vr::Eye_Right)
+	{
+		matMVP =  m_mat4eyePosRight * m_mat4HMDPose;
+	}
+	matMVP =  matMVP.invert();
+	//cout << "viwe mat: " << matMVP << endl;
+	Vector3 ViewPos{ matMVP[12], matMVP[13],matMVP[14] }; 
+	return ViewPos;
+
 }
 
 // ================= self define ===================

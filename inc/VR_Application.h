@@ -10,9 +10,9 @@
 #include "VR_CG_OpenGL.h"
 #include <SDL_opengl.h>
 
-#include "Player.h"
 #include "Matrices.h"
 #include "CubeMap.h"
+#include "StaticPlayer.h"
 
 
 class VR_Application
@@ -55,6 +55,7 @@ public:
 
 	// =========== self define ==============
 
+	Vector3 GetVRViewPos(vr::Hmd_Eye nEye);
 
 	Matrix4 GetHMDMatrixProjectionEye(vr::Hmd_Eye nEye);
 	Matrix4 GetHMDMatrixPoseEye(vr::Hmd_Eye nEye);
@@ -216,6 +217,7 @@ private: // OpenGL bookkeeping
 
 	Spring spring1;
 	Player* skybox;
+	Player* ground;
 
 };
 

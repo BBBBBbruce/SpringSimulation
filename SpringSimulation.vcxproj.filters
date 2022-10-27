@@ -75,6 +75,9 @@
     <ClCompile Include="src\DynamicPlayer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="src\mesh.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="inc\HookeSpring.h">
@@ -128,6 +131,9 @@
     <ClInclude Include="inc\StaticPlayer.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="inc\mesh.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="README.md">
@@ -137,6 +143,15 @@
       <Filter>Resource Files\Shaders</Filter>
     </None>
     <None Include="Shaders\skybox.frag">
+      <Filter>Resource Files\Shaders</Filter>
+    </None>
+    <None Include="Shaders\ground_ggx.frag">
+      <Filter>Resource Files\Shaders</Filter>
+    </None>
+    <None Include="Shaders\ground.vert">
+      <Filter>Resource Files\Shaders</Filter>
+    </None>
+    <None Include="Shaders\ground.frag">
       <Filter>Resource Files\Shaders</Filter>
     </None>
   </ItemGroup>

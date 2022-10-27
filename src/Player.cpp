@@ -16,7 +16,6 @@ Player::Player(string name)
 	, VAO(0)
 	, VBO(0)
 	, MatrixLocation(-1)
-	, cubemap(0)
 {
 	// invisable
 	debugName = name;
@@ -28,7 +27,6 @@ Player::Player(string name, string path)
 	, VAO(0)
 	, VBO(0)
 	, MatrixLocation(-1)
-	, cubemap(0)
 {
 	ShaderPath = path;
 	debugName = name;
@@ -40,7 +38,7 @@ Player::~Player()
 	if (VAO != 0)				glDeleteVertexArrays(1, &VAO);
 	if (VBO != 0)				glDeleteBuffers(1, &VBO);
 
-	Vertices.clear();
+	vertices.clear();
 }
 
 void Player::PInit()
@@ -49,8 +47,45 @@ void Player::PInit()
 		if(CreateShader()) cout<< "shader creation successful\n";
 		if(bindtexture()) cout<<"texture binded\n";
 	} 
-	setup();
 }
+
+void Player::tranlate(float x, float y, float z)
+{
+	TransformMatrix.translate(x,y,z);
+}
+
+void Player::scale(float sx, float sy, float sz)
+{
+	TransformMatrix.scale(sx,sy,sz);
+}
+
+void Player::rotate(float angle, Vector3 axis)
+{
+	TransformMatrix.rotate(angle, axis);
+}
+
+Matrix4 Player::Get_TransformMatrix()
+{
+	return TransformMatrix;
+}
+
+void Player::setMat4_Shader(const std::string& name, const Matrix4& mat) const
+{
+	glUniformMatrix4fv(glGetUniformLocation(ShaderProgramID, name.c_str()), 1, GL_FALSE, mat.get());
+}
+
+void Player::setVec3_Shader(const std::string& name, const Vector3& vec) const
+{
+	float vec_[3] = { vec.x,vec.y,vec.z };
+	glUniform3fv(glGetUniformLocation(ShaderProgramID, name.c_str()), 1, vec_);
+}
+
+void Player::setTextureMap(string path)
+{
+	texturePath = path;
+}
+
+
 
 
 //void Player::DefineVertices(string path)
@@ -99,19 +134,19 @@ void Player::PInit()
 //
 //}
 
-void Player::Render(Matrix4 projectionview)
-{
-	glDepthFunc(GL_LEQUAL);
-	glUseProgram(ShaderProgramID);
-	glUniformMatrix4fv(MatrixLocation, 1, GL_FALSE, projectionview.get());
-	glActiveTexture(GL_TEXTURE0);
-	//glUniformMatrix4fv(m_nSkyBoxLocation, 1, GL_FALSE, GetCurrentViewProjectionMatrix(nEye).get());
-	glBindVertexArray(VAO);
-	glBindTexture(GL_TEXTURE_CUBE_MAP, cubemap);
-	glDrawArrays(GL_TRIANGLES, 0, 36);
-	glBindVertexArray(0);
-	glDepthFunc(GL_LESS);
-}
+//void Player::Render(Matrix4 projectionview)
+//{
+//	glDepthFunc(GL_LEQUAL);
+//	glUseProgram(ShaderProgramID);
+//	glUniformMatrix4fv(MatrixLocation, 1, GL_FALSE, projectionview.get());
+//	glActiveTexture(GL_TEXTURE0);
+//	//glUniformMatrix4fv(m_nSkyBoxLocation, 1, GL_FALSE, GetCurrentViewProjectionMatrix(nEye).get());
+//	glBindVertexArray(VAO);
+//	glBindTexture(GL_TEXTURE_CUBE_MAP, cubemap);
+//	glDrawArrays(GL_TRIANGLES, 0, 36);
+//	glBindVertexArray(0);
+//	glDepthFunc(GL_LESS);
+//}
 
 bool Player::CreateShader()
 {
@@ -121,15 +156,11 @@ bool Player::CreateShader()
 	LoadShader(ShaderVert, ShaderFrag);
 	//cout << ShaderFrag << endl;
 
+	cout << ShaderFrag << endl;
 	ShaderProgramID = CompileGLShader(debugName.c_str(), ShaderVert.c_str(), ShaderFrag.c_str());
 
 	MatrixLocation = glGetUniformLocation(ShaderProgramID, "ViewProjection");
 	//if (m_unSkyBoxProgramID == 1) std::cout << "created skybox shader" << std::endl;
-	if (MatrixLocation == -1)
-	{
-		dprintf("Unable to find viewprojection matrix in %s shader\n", debugName.c_str());
-		return false;
-	}
 	return true;
 }
 
@@ -177,26 +208,27 @@ void Player::LoadShader(string& Vert, string& Frag)
 	}
 }
 
-void Player::setup()
-{
-	DefineVertices();
+//void Player::setup()
+//{
+//
+//	glGenVertexArrays(1, &VAO);
+//	glBindVertexArray(VAO);
+//
+//	glGenBuffers(1, &VBO);
+//	glBindBuffer(GL_ARRAY_BUFFER, VBO);
+//
+//	glBufferData(GL_ARRAY_BUFFER, sizeof(float) * Vertices.size(), &Vertices[0], GL_STATIC_DRAW);
+//
+//	GLsizei stride = sizeof(Vector3);// if texcoord needed change to VertexDataScene
+//	uintptr_t offset = 0;
+//
+//	glEnableVertexAttribArray(0);
+//	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, stride, (const void*)offset);
+//
+//	glBindVertexArray(0);
+//}
 
-	glGenVertexArrays(1, &VAO);
-	glBindVertexArray(VAO);
 
-	glGenBuffers(1, &VBO);
-	glBindBuffer(GL_ARRAY_BUFFER, VBO);
-
-	glBufferData(GL_ARRAY_BUFFER, sizeof(float) * Vertices.size(), &Vertices[0], GL_STATIC_DRAW);
-
-	GLsizei stride = sizeof(Vector3);// if texcoord needed change to VertexDataScene
-	uintptr_t offset = 0;
-
-	glEnableVertexAttribArray(0);
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, stride, (const void*)offset);
-
-	glBindVertexArray(0);
-}
 
 //bool Player::bindtexture()
 //{

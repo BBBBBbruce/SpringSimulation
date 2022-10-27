@@ -11,7 +11,28 @@
 #include "Matrices.h"
 #include "Tool.h"
 
+
+
 using namespace std;
+
+struct Vertex {
+	// position
+	Vector3 Position;
+	// normal
+	Vector3 Normal;
+	// texCoords
+	Vector2 TexCoords;
+	// tangent
+	Vector3 Tangent;
+	// bitangent
+	Vector3 Bitangent;
+};
+
+struct Texture {
+	unsigned int id;
+	int type;
+	string path;
+};
 
 
 class Player
@@ -19,14 +40,24 @@ class Player
 private:
 	string debugName;
 	string ShaderPath;
-	GLuint ShaderProgramID;
-	GLuint VAO;
-	GLuint VBO;
-	GLuint MatrixLocation;
+
 
 protected:
-	GLuint cubemap;
-	vector<float> Vertices;
+
+	GLuint VBO;
+	GLuint EBO;
+	vector<Vertex> vertices;
+	vector<GLuint> indices;
+	vector<Texture> textures;
+
+
+	int verticesCount;
+	GLuint ShaderProgramID;
+	GLuint VAO;
+	GLuint MatrixLocation;
+	Matrix4 TransformMatrix;
+
+	string texturePath;
 
 
 public:
@@ -36,12 +67,24 @@ public:
 	~Player();
 	void PInit();
 	virtual void DefineVertices(string path = "no path") = 0;
-	void Render(Matrix4 projectionview);
+	virtual void setup() = 0;
+	virtual void Render(Matrix4 projectionview) = 0;
+	void tranlate(float x, float y, float z);
+	void scale(float sx, float sy, float sz);
+	void rotate(float angle, Vector3 axis );
+	Matrix4 Get_TransformMatrix();
+	
+	void setTextureMap(string path);
+
+// shaders
+public:
+	void setMat4_Shader(const std::string& name, const Matrix4& mat) const;
+	void setVec3_Shader(const std::string& name, const Vector3& vec) const;
 
 private:
 	bool CreateShader();
 	void LoadShader(string& Vert, string& Frag);
-	void setup();
+	
 	
 
 protected:

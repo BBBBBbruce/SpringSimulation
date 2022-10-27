@@ -159,6 +159,7 @@
     <ClCompile Include="src\DynamicPlayer.cpp" />
     <ClCompile Include="src\GraphicsRenderer.cpp" />
     <ClCompile Include="src\HookeSpring.cpp" />
+    <ClCompile Include="src\mesh.cpp" />
     <ClCompile Include="src\ObjReader.cpp" />
     <ClCompile Include="src\PhysicsRenderer.cpp" />
     <ClCompile Include="src\Player.cpp" />
@@ -172,6 +173,7 @@
     <ClInclude Include="inc\DynamicPlayer.h" />
     <ClInclude Include="inc\GraphicsRenderer.h" />
     <ClInclude Include="inc\HookeSpring.h" />
+    <ClInclude Include="inc\mesh.h" />
     <ClInclude Include="inc\ObjReader.h" />
     <ClInclude Include="inc\PhysicsRenderer.h" />
     <ClInclude Include="inc\Player.h" />
@@ -188,6 +190,9 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="README.md" />
+    <None Include="Shaders\ground.frag" />
+    <None Include="Shaders\ground_ggx.frag" />
+    <None Include="Shaders\ground.vert" />
     <None Include="Shaders\skybox.frag" />
     <None Include="Shaders\skybox.vert" />
   </ItemGroup>
